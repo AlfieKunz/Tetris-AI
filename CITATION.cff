@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this code or data in your work, please cite the associated preprint."
+authors:
+- family-names: "Kunz"
+  given-names: "Alfie"
+title: "Tetris Game & Artificial Intelligence"
+version: 1.0.0
+date-released: 2024-11-07
+url: "https://github.com/AlfieKunz/Tetris-AI"
