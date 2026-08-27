@@ -10,6 +10,7 @@ Public Class TetrisAI
         Public ParentNode As SearchNode 'Dynamic list approach towards parent, to form the path of moves
         Public Depth As Integer
     End Class
+
     Private PossibleActions As Keys() = {Keys.A, Keys.D, Keys.Left, Keys.Right, Keys.Down}
     Private SimPiece As Piece
 
@@ -38,7 +39,7 @@ Public Class TetrisAI
         Next
     End Sub
 
-    Public Function GetBestPieceMoves(ByVal ActivePiece As Piece, ByRef BestScore As Integer) As List(Of Keys)
+    Public Function GetBestPieceMoves(ByVal ActivePiece As Piece, ByRef BestScore As Integer) As (Moves As List(Of Keys), FinalPos As PiecePos)
         Dim MinScore As Integer = Integer.MaxValue
         Dim BestTerminalNode As SearchNode
 
@@ -92,9 +93,17 @@ Public Class TetrisAI
             End If
         End While
 
+        'Saves the final position (so we can check the GUI is placing things in the right place).
+        Dim FinalPosition As PiecePos
+        FinalPosition.X = StartNode.X
+        FinalPosition.Y = StartNode.Y
+
         'Backtracks the tree of nodes to reconstruct the optimal path.
         Dim BestMoves As New List(Of Keys)()
         If BestTerminalNode IsNot Nothing Then
+            FinalPosition.X = BestTerminalNode.X
+            FinalPosition.Y = BestTerminalNode.Y
+
             ' Walk backwards up the tree until we hit the start node
             While BestTerminalNode.ParentNode IsNot Nothing
                 BestMoves.Add(BestTerminalNode.Move)
@@ -104,14 +113,16 @@ Public Class TetrisAI
             'Replaces any final string of continuous downs with a hard drop. As PossibleActions begins with rotations
             'and ends with drops, and BFS won't choose later paths unless they're strictly better (which typically means
             'fewer moves, hence more likely of drop chances), we are more likely to get a string of downs at the end.
-            While BestMoves.Count > 0 AndAlso BestMoves(BestMoves.Count - 1) = Keys.Down
-                BestMoves.RemoveAt(BestMoves.Count - 1)
-            End While
-            BestMoves.Add(Keys.Space)
+            If BestMoves.Count > 0 AndAlso BestMoves(BestMoves.Count - 1) = Keys.Down Then
+                While BestMoves.Count > 0 AndAlso BestMoves(BestMoves.Count - 1) = Keys.Down
+                    BestMoves.RemoveAt(BestMoves.Count - 1)
+                End While
+                BestMoves.Add(Keys.Space)
+            End If
         End If
 
         BestScore = MinScore
-        Return BestMoves
+        Return (BestMoves, FinalPosition)
     End Function
 
 
@@ -234,6 +245,7 @@ Public Class TetrisAI
         Dim PieceState As Boolean(,) = SimPiece.GetCurrentState
         Dim PiecePosition As PiecePos = SimPiece.GetPosition()
         Dim PieceDimensions As SByte = SimPiece.GetDimensions()
+        Dim PieceDownInfo As SByte() = SimPiece.GetDownEdgeInfo()
 
         'Makes a copy of the height map, and adjusts it via the new piece placement.
         Dim HeightMap(BaseHeightMap.Length - 1) As Integer
@@ -251,6 +263,7 @@ Public Class TetrisAI
                 End If
             Next
         Next
+        Dim MaxHeightMap As Double = HeightMap.Max
 
         Dim HoleCount As Decimal = 0
         Dim HoleHeightScalingFactor As Decimal = 1.5
@@ -285,9 +298,11 @@ Public Class TetrisAI
             Next
         Next
         For Each Hole In BaseHoles
-            'Calculates if we are placing the piece directly over an existing hole. If so, apply a penalty.
             If PiecePosition.X <= Hole.X AndAlso Hole.X <= PiecePosition.X + PieceDimensions Then
-                HoleCount += HoleHeightScalingFactor * Math.Min(HeightMap.Max - Hole.Y, 4)
+                ' Calculates if we are placing the piece directly over an existing hole. If so, apply a small penalty.
+                If PieceDownInfo(Hole.X - PiecePosition.X) > -128 Then
+                    HoleCount += OpenHoleScalingFactor * OpenHoleScalingFactor * HoleHeightScalingFactor * Math.Min(MaxHeightMap - Hole.Y, 4)
+                End If
             End If
         Next
 
@@ -301,7 +316,7 @@ Public Class TetrisAI
                     LinesCleared += 1
                 ElseIf BlockedHole AndAlso CanClearHole Then
                     'Checks if the line clearning stops the hole from being blocked.
-                    If PieceState(PieceDimensions - y, PieceState.GetLength(1) - 1) Then CanClearHole = False
+                    If PieceState(PieceDimensions - y, PieceState.GetLength(1) - 1) AndAlso MaxHeightMap < 15 Then CanClearHole = False
                 End If
             End If
         Next
@@ -316,14 +331,20 @@ Public Class TetrisAI
                 Bumpiness += Math.Abs(LocalBump)
                 'Incentivices only 1 large piller.
                 If Math.Abs(LocalBump) > 4 Then ExtraPillerCount += 1
+            ElseIf LocalBump >= 0 AndAlso MaxHeightMap <= 12 Then
+                'Column 10 is level with or lower than column 9 - this is the intended "well" shape, so reward it (capped).
+                PenaltyScore -= Math.Min(LocalBump, 5) * 15
             Else
-                'We have probed the useable column.
-                PenaltyScore -= Math.Min(Math.Max(LocalBump, 0), 5) * 20
+                'Inhibits unwanted spikes in the well.
+                Bumpiness += Math.Abs(LocalBump) * If(MaxHeightMap > 14, 2, 1)
+                If Math.Abs(LocalBump) > 4 Then ExtraPillerCount += If(MaxHeightMap > 14, 2, 1)
             End If
         Next
-        PenaltyScore += (40 * HeightMap.Max) + (8 * HeightMap.Sum) + (7 * PiecePosition.Y)
+        Dim HeightMapPenalty = If(MaxHeightMap <= 10, MaxHeightMap, 0.4 * MaxHeightMap * MaxHeightMap - 7 * MaxHeightMap + 40)
+        PenaltyScore += (40 * HeightMapPenalty) + (8 * HeightMap.Sum) + (7 * PiecePosition.Y)
         PenaltyScore += CInt(100 * HoleCount) + (15 * Bumpiness) + (100 * ExtraPillerCount)
-        PenaltyScore += If(LinesCleared, -45 * LinesCleared ^ 3, 0) + If(BlockedHole, 500, 0)
+        If LinesCleared > 0 Then PenaltyScore -= If(MaxHeightMap <= 12, 45 * LinesCleared ^ 3, 120 * LinesCleared ^ 2)
+        PenaltyScore += If(BlockedHole, 500, 0)
 
         'Prioritises the shortest path.
         Return PenaltyScore * 1000 + NodeDepth

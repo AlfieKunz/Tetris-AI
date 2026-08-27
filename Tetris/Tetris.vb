@@ -51,6 +51,7 @@ Public Class Tetris
     Dim AITimer As New Stopwatch
     Private AIMode As Boolean
     Private AIMovesQueue As New Queue(Of Keys)
+    Private AIFinalPiecePosition As PiecePos
     Private AIMoveInverval As Integer = 50
     Private AIScoreToBeatHeldMove As Integer = 0
 
@@ -144,23 +145,25 @@ Public Class Tetris
         AI.InitHelperFunction(Board, 11)
         'Instantly finds the best set of moves for the newly-spawned piece.
         Dim CurrentScore As Integer
-        Dim CurrentMoves As List(Of Keys) = AI.GetBestPieceMoves(CurrentPiece, CurrentScore)
+        Dim CurrentMoveData = AI.GetBestPieceMoves(CurrentPiece, CurrentScore)
         AIMovesQueue.Clear()
         'Can we get a better score from the currently held piece?
         If HeldIndex = -1 Then
             AIMovesQueue.Enqueue(Keys.ShiftKey) 'Always holds the first piece.
         ElseIf CanHoldPiece Then
             Dim HoldScore As Integer
-            Dim HoldMoves As List(Of Keys) = AI.GetBestPieceMoves(PieceTemplateArray(HeldIndex), HoldScore)
+            Dim HoldMoveData = AI.GetBestPieceMoves(PieceTemplateArray(HeldIndex), HoldScore)
             'Uses the held piece if we get a better score from it.
             If HoldScore + AIScoreToBeatHeldMove < CurrentScore Then
-                CurrentMoves = HoldMoves
+                CurrentMoveData.Moves = HoldMoveData.Moves
+                CurrentMoveData.FinalPos = HoldMoveData.FinalPos
                 AIMovesQueue.Enqueue(Keys.ShiftKey)
             End If
         End If
-        For Each MovementKey In CurrentMoves
+        For Each MovementKey In CurrentMoveData.Moves
             AIMovesQueue.Enqueue(MovementKey)
         Next
+        AIFinalPiecePosition = CurrentMoveData.FinalPos
         AITimer.Stop()
     End Sub
 
@@ -497,6 +500,12 @@ Public Class Tetris
                 End If
             End If
         Next
+
+        'Makes sure we placed the piece where the AI intended.
+        If AIMode Then
+            Console.Write("Piece Placed in Intended Location: ")
+            Console.WriteLine(If(PiecePosition.X = AIFinalPiecePosition.X AndAlso PiecePosition.Y = AIFinalPiecePosition.Y, "YES.", "NO."))
+        End If
         CurrentPiece.Reset()
 
         'Adds scores for clearing lines.
