@@ -5,6 +5,7 @@ SPACE: Hard Drop Piece.
 Up Arrow: Rotate Piece Clockwise.  
 A / D: Rotate Piece Anticlockwise / Clockwise.  
 SHIFT: Hold Piece.  
+R: Reset Game.  
 
 1) The game of Tetris will start immediately upon program start-up, in the "Human" mode (ie: the user is making the moves), and will play until the game ends. To reset the game, simply restart the program.
 2) To let the AI make moves on the board, click the "AI Mode" button in the top right corner. The AI will always begin with holding the active piece, or hard-dropping it otherwise. Do not press any other keys when the AI is performing moves.

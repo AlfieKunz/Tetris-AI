@@ -32,6 +32,7 @@ This work is self-motivated and self-funded, and is written primarily in VB.NET 
 ✅ Next-piece and held-piece GUI preview, showing the upcoming 3 pieces.  
 ✅ Ghost piece preview, showing exactly where the current piece will land if dropped.  
 ✅ Live ASCII mirror of the board printed to the console (redrawn live without scrolling) for debugging and syncing between the GUI and AI views.  
+✅ Easy ability to reset games, and auto-resetting feature upon Game Over.  
 
 
 ### Artificial Intelligence & Heuristics
@@ -61,6 +62,7 @@ Down Arrow: Move Piece Down.
 SPACE: Hard Drop Piece.  
 Up Arrow: Rotate Piece Clockwise.  
 A / D: Rotate Piece Anticlockwise / Clockwise.  
+R: Reset Game.  
 SHIFT: Hold Piece.
 >1) The game of Tetris will start immediately upon program start-up, in the "Human" mode (ie: the user is making the moves), and will play until the game ends. To reset the game, simply restart the program.
 >2) To let the AI make moves on the board, click the "AI Mode" button in the top right corner. The AI will always begin with holding the active piece, or hard-dropping it otherwise. Do not press any other keys when the AI is performing moves.

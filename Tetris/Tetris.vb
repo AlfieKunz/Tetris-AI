@@ -66,16 +66,45 @@ Public Class Tetris
         GameBoard.SendToBack()
         GameClock = New Timer(New TimerCallback(AddressOf GameTick), Nothing, TickConstant, TickConstant)
 
-        ConstructBoard()
-        PopulateBag()
         ConstructPieces()
-        CreateRndPiece()
+        ResetGame()
+    End Sub
 
-        DisplayBoardConsole()
+    Private Sub ResetGame()
+        TimerEnabled = False
+        GameRunning = False
 
+        For Each Box In BoardPiecePictureBoxes
+            GameBoard.Controls.Remove(Box)
+            Box.Dispose()
+        Next
+        BoardPiecePictureBoxes.Clear()
+
+        Board.Clear()
+        ConstructBoard()
+
+        PieceBag.Clear()
+        PopulateBag()
+        For Each Piece In PieceTemplateArray
+            If Piece IsNot Nothing Then Piece.Reset()
+        Next
+
+        PlayerScore = 0
+        NoLinesPushedDown = 0
+        Label1.Text = "Score: 0"
+        HeldIndex = -1
+        HeldBox.Image = Nothing
         CanHoldPiece = True
-        TimerEnabled = True
+        AIMovesQueue.Clear()
+        GameOverLabel.Visible = False
+
+        If GameClock IsNot Nothing Then GameClock.Dispose()
+        GameClock = New Timer(New TimerCallback(AddressOf GameTick), Nothing, TickConstant, TickConstant)
+
         GameRunning = True
+        TimerEnabled = True
+        CreateRndPiece()
+        DisplayBoardConsole()
     End Sub
 
     Private Sub GameTick()
@@ -124,6 +153,7 @@ Public Class Tetris
             GameClock.Dispose()
             GameRunning = False
             GameOverLabel.Visible = True
+            If AutoResetBtn.Checked Then ResetGame()
         End If
     End Sub
 
@@ -314,6 +344,7 @@ Public Class Tetris
 
 
     Private Sub Tetris_KeyPress(sender As Object, e As KeyEventArgs) Handles MyBase.KeyDown
+        If e.KeyCode = Keys.R Then ResetGame() : Exit Sub
         If GameRunning Then
             TimerEnabled = False
             Select Case e.KeyCode

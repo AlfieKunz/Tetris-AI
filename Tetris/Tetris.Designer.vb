@@ -25,6 +25,7 @@ Partial Class Tetris
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(Tetris))
         GameBoard = New PictureBox()
         PieceInfoPanel = New Panel()
+        AutoResetBtn = New CheckBox()
         AIBtn = New RadioButton()
         HumanBtn = New RadioButton()
         NextBox3 = New PictureBox()
@@ -60,6 +61,7 @@ Partial Class Tetris
         ' PieceInfoPanel
         ' 
         PieceInfoPanel.BackColor = Color.Silver
+        PieceInfoPanel.Controls.Add(AutoResetBtn)
         PieceInfoPanel.Controls.Add(AIBtn)
         PieceInfoPanel.Controls.Add(HumanBtn)
         PieceInfoPanel.Controls.Add(NextBox3)
@@ -75,11 +77,22 @@ Partial Class Tetris
         PieceInfoPanel.Size = New Size(160, 694)
         PieceInfoPanel.TabIndex = 1
         ' 
+        ' AutoResetBtn
+        ' 
+        AutoResetBtn.AutoSize = True
+        AutoResetBtn.Font = New Font("Elephant", 10.1999989F, FontStyle.Regular, GraphicsUnit.Point)
+        AutoResetBtn.Location = New Point(10, 5)
+        AutoResetBtn.Name = "AutoResetBtn"
+        AutoResetBtn.Size = New Size(149, 22)
+        AutoResetBtn.TabIndex = 10
+        AutoResetBtn.Text = "Auto Reset Game"
+        AutoResetBtn.UseVisualStyleBackColor = True
+        ' 
         ' AIBtn
         ' 
         AIBtn.AutoSize = True
         AIBtn.Font = New Font("Elephant", 10.1999989F, FontStyle.Regular, GraphicsUnit.Point)
-        AIBtn.Location = New Point(21, 50)
+        AIBtn.Location = New Point(21, 60)
         AIBtn.Margin = New Padding(3, 2, 3, 2)
         AIBtn.Name = "AIBtn"
         AIBtn.Size = New Size(87, 22)
@@ -92,7 +105,7 @@ Partial Class Tetris
         HumanBtn.AutoSize = True
         HumanBtn.Checked = True
         HumanBtn.Font = New Font("Elephant", 10.1999989F, FontStyle.Regular, GraphicsUnit.Point)
-        HumanBtn.Location = New Point(21, 24)
+        HumanBtn.Location = New Point(21, 34)
         HumanBtn.Margin = New Padding(3, 2, 3, 2)
         HumanBtn.Name = "HumanBtn"
         HumanBtn.Size = New Size(122, 22)
@@ -150,7 +163,7 @@ Partial Class Tetris
         ' HeldBox
         ' 
         HeldBox.BackColor = Color.White
-        HeldBox.Location = New Point(21, 128)
+        HeldBox.Location = New Point(21, 133)
         HeldBox.Name = "HeldBox"
         HeldBox.Size = New Size(120, 120)
         HeldBox.TabIndex = 1
@@ -159,7 +172,7 @@ Partial Class Tetris
         ' OutlineBox1
         ' 
         OutlineBox1.BackColor = Color.Black
-        OutlineBox1.Location = New Point(17, 123)
+        OutlineBox1.Location = New Point(17, 128)
         OutlineBox1.Name = "OutlineBox1"
         OutlineBox1.Size = New Size(128, 128)
         OutlineBox1.TabIndex = 4
@@ -169,7 +182,7 @@ Partial Class Tetris
         ' 
         HeldLabel.AutoSize = True
         HeldLabel.Font = New Font("Elephant", 20.2499962F, FontStyle.Regular, GraphicsUnit.Point)
-        HeldLabel.Location = New Point(20, 86)
+        HeldLabel.Location = New Point(20, 91)
         HeldLabel.Name = "HeldLabel"
         HeldLabel.Size = New Size(112, 35)
         HeldLabel.TabIndex = 0
@@ -250,4 +263,5 @@ Partial Class Tetris
     Friend WithEvents AIBtn As RadioButton
     Friend WithEvents Label1 As Label
     Friend WithEvents Label2 As Label
+    Friend WithEvents AutoResetBtn As CheckBox
 End Class
