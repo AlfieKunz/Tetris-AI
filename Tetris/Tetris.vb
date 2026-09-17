@@ -533,10 +533,10 @@ Public Class Tetris
         Next
 
         'Makes sure we placed the piece where the AI intended.
-        If AIMode Then
-            Console.Write("Piece Placed in Intended Location: ")
-            Console.WriteLine(If(PiecePosition.X = AIFinalPiecePosition.X AndAlso PiecePosition.Y = AIFinalPiecePosition.Y, "YES.", "NO."))
-        End If
+        'If AIMode Then
+        '    Console.Write("Piece Placed in Intended Location: ")
+        '    Console.WriteLine(If(PiecePosition.X = AIFinalPiecePosition.X AndAlso PiecePosition.Y = AIFinalPiecePosition.Y, "YES.", "NO."))
+        'End If
         CurrentPiece.Reset()
 
         'Adds scores for clearing lines.
